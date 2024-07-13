@@ -1,0 +1,1 @@
+echo export CWD="$1" >>env.sh
