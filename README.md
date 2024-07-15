@@ -11,10 +11,10 @@
 
 ## 常规使用方法
 
-0. 脚本放置到`~/.local/bin`,设置可执行权限
+0. 脚本放置到`~/.local/bin`,设置可执行权限,执行`setup-pkg-env.sh`将目录配置到`.bashrc`
 1. 先用`pkg-build.sh 包名`构建项目
 2. 进入项目目录，先用`llr`测试启动，如不正常再使用llre在容器内部测试应用
-3. 测试好参数后，按需配置`env.sh`、`build.sh`、`s`tart.sh`和`post.sh`，在容器构建时加入自定义指令
+3. 测试好参数后，按需在项目目录下创建`env.sh`、`build.sh`、`start.sh`和`post.sh`，添加自定义指令，使用`llb`重新构建，过程中在各个构建阶段自动调用这些文件（若有）。
 4. `llr`再次测试，正常后`lle`打包安装测试。
 
 ## 功能
@@ -71,12 +71,6 @@
 * [setup-pkg-env.sh](setup-pkg-env.sh)
     * 添加~/.local/bin到PATH
     * 添加玲珑相关命令别名
-
-### deb
-* [deb-repack.sh](deb-repack.sh)
-    * 未经测试
-    * 转换zstd包到普通xz
-    * PS: zst的包比xz还大一大截，真是更新了个寂寞
 ```
 alias "llb=ll-builder build"
 alias "llr=ll-builder run"
@@ -91,6 +85,12 @@ alias "llcu=ll-cli uninstall"
 alias "llcl=ll-cli list"
 alias "llcp=ll-cli ps"
 ```
+
+### deb
+* [deb-repack.sh](deb-repack.sh)
+    * 未经测试
+    * 转换zstd包到普通xz
+    * PS: zst的包比xz还大一大截，真是更新了个寂寞
 
 
 
@@ -118,6 +118,7 @@ alias "llcp=ll-cli ps"
 * SHELL_BIN：解释器路径，如`python3`，覆盖#! shebang的行为。
 * NO_PATCH_EXEC: 禁用shebang补丁
 * NO_FIX_SYM: 禁用相对符号链接转绝对符号链接补丁
+* NO_LINK: 禁用启动时符号链接补丁
 
 ## 可插入的构建流程
 
