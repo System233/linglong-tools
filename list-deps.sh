@@ -6,8 +6,17 @@ ROOT=$(readlink -f $(dirname $0))
 if [ -z "$TARGET_ARCH" ];then
   TARGET_ARCH=amd64
 fi
+
+if [ -e "$1" ];then
+  DEPS_RELIST=`dpkg -I $1 |grep -oP "Depends:\K.*"|sed 's/,//g'`
+  # DEPS=$(apt-rdepends $DEPS1 |grep -oP 'Depends: \K\S+'|sort|uniq)
+else
+  DEPS_RELIST=$@
+  # DEPS=$(apt-rdepends $* |grep -oP 'Depends: \K\S+'|sort|uniq)
+  #DEPS=$(LC_ALL=en apt-cache  depends --recurse --no-breaks --no-replaces --no-suggests  --no-recommends  --no-conflicts  --no-enhances  $* |grep -oP 'Depends: \K\S+'|sed -E 's+[<>]++g'|sort|uniq)
+fi
 # DEPS=$(LC_ALL=en apt-cache  depends --recurse --no-breaks --no-replaces --no-suggests  --no-recommends  --no-conflicts  --no-enhances  $* |grep -oP 'Depends: \K\S+'|sed -E 's+[<>]++g'|sort|uniq)
-DEPS=$(LC_ALL=en apt-cache depends $@ --recurse --no-recommends --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances |grep -oP 'Depends:\s*\K\S+'|grep -vP "<|>"|sort -u)
+DEPS=$(LC_ALL=en apt-cache depends $DEPS_RELIST --recurse --no-recommends --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances |grep -oP 'Depends:\s*\K\S+'|grep -vP "<|>"|sort -u)
 
 DEPS="$@ $DEPS"
 while IFS=: read -r src dist; do

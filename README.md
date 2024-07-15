@@ -7,14 +7,26 @@
 * 依赖库：apt-file
 * 仅用于deb转制打包法，因此输入包名为apt仓库中的包名
 * 不适用于源码编译打包法的玲珑项目
-* 暂不支持直接使用本地deb文件输入，没有做这个处理。
+* 实验性的deb文件输入支持 ~~暂不支持直接使用本地deb文件输入，没有做这个处理。~~
+
+## 常规使用方法
+
+1. 先用`pkg-build.sh 包名`构建项目
+2. 进入项目目录，先用`llr`测试启动，如不正常再使用llre在容器内部测试应用
+3. 测试好参数后，按需配置`env.sh`、`build.sh`、`s`tart.sh`和`post.sh`，在容器构建时加入自定义指令
+4. `llr`再次测试，正常后`lle`打包安装测试。
 
 ## 功能
 
 常用命令列表
 
+注：[xxx] 参数为可选
+## 环境变量配置
+* NO_RT_ENV：此项目未使用玲珑Runtime依赖，linglong.yaml内未指定runtime时或生成项目前手动设置。
+* TARGET_ARCH：此项目的架构，自动检测，默认amd64
+
 ### 项目构建类
-* [pkg-build.sh](pkg-build.sh) [包名]
+* [pkg-build.sh](pkg-build.sh) [包名/deb文件]
     * 在当前目录下自动生成玲珑项目并构建，有包名时在包名目录下构建，没有传递包名时以当前目录作为项目文件夹构建（文件夹名为包名）
     * 自动转换deb应用到linyaps玲珑包
     * 自动解析版本号
@@ -39,11 +51,12 @@
     * 启动后，拖动测试好的玲珑应用快捷方式到终端并回车，自动导出layer并卸载此应用。
 
 ### 依赖相关
-* [pkg-fuck-deps.sh](pkg-fuck-deps.sh)
+* [pkg-fuck-deps.sh](pkg-fuck-deps.sh) [库名]
     * 补全依赖后仍然出现缺依赖库时使用，自动搜索错误信息中的库以及ldd筛选的库，并自动添加依赖。
-* [list-deps.sh](list-deps.sh) 包名...
+    * 可以指定要补全其依赖的程序
+* [list-deps.sh](list-deps.sh) 包名/deb文件...
     * 列出指定包名的全部依赖列表
-* [diff-deps.sh](diff-deps.sh) 包名...
+* [diff-deps.sh](diff-deps.sh) 包名/deb文件...
     * 列出指定包名的排除[玲珑内置依赖(env.deps)](env.deps)后的依赖列表
 * [pull-deps.sh](pull-deps.sh)
     * 拉取当前项目的依赖
@@ -57,6 +70,12 @@
 * [setup-pkg-env.sh](setup-pkg-env.sh)
     * 添加~/.local/bin到PATH
     * 添加玲珑相关命令别名
+
+### deb
+* [deb-repack.sh](deb-repack.sh)
+    * 未经测试
+    * 转换zstd包到普通xz
+    * PS: zst的包比xz还大一大截，真是更新了个寂寞
 ```
 alias "llb=ll-builder build"
 alias "llr=ll-builder run"
@@ -122,5 +141,6 @@ alias "llcp=ll-cli ps"
 
 ## 依赖配置文件
 
-* env.deps: 玲珑容器依赖列表
+* env.rt.deps: 玲珑容器带runtime依赖列表
+* env.nrt.deps: 玲珑容器无runtime依赖列表
 * repl.deps: 包名替换表，有时依赖的虚拟包名无法通过apt download下载，或者需要屏蔽某些依赖时使用

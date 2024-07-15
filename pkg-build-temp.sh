@@ -113,16 +113,19 @@ if [ -e $PREFIX/bin/start.sh ];then
 fi
 
 echo "#!/bin/bash">$PREFIX/bin/start.sh
-for i in `ls $PREFIX/usr/share`;do
-    if [ ! -e "/usr/share/$i" ];then
-        echo ln -sf "$PREFIX/share/$i" "/usr/share/$i" 2\>/dev/null  | tee -a $PREFIX/bin/start.sh
-    fi
-done
 
-echo ln -sf "/opt/apps/$LINGLONG_PKG_NAME" "/opt/apps/$PKG_NAME" 2\>/dev/null  | tee -a  $PREFIX/bin/start.sh
-echo ln -sf "/opt/apps/$LINGLONG_PKG_NAME/files/share" "/opt/apps/$LINGLONG_PKG_NAME/files/usr" 2\>/dev/null | tee -a $PREFIX/bin/start.sh
-echo ln -sf "/opt/apps/$LINGLONG_PKG_NAME/files/share" "/opt/apps/$LINGLONG_PKG_NAME/files/opt" 2\>/dev/null | tee -a  $PREFIX/bin/start.sh
+if [ -z $NO_LINK ];then
+    for i in `ls $PREFIX/usr/share`;do
+        if [ ! -e "/usr/share/$i" ];then
+            echo ln -sf "$PREFIX/share/$i" "/usr/share/$i" 2\>/dev/null  | tee -a $PREFIX/bin/start.sh
+        fi
+    done
 
+    echo ln -sf "/opt/apps/$LINGLONG_PKG_NAME" "/opt/apps/$PKG_NAME" 2\>/dev/null  | tee -a  $PREFIX/bin/start.sh
+    echo ln -sf "/opt/apps/$LINGLONG_PKG_NAME/files/share" "/opt/apps/$LINGLONG_PKG_NAME/files/usr" 2\>/dev/null | tee -a $PREFIX/bin/start.sh
+    # 链接了opt，但未删除opt，暂不处理
+    echo ln -sf "/opt/apps/$LINGLONG_PKG_NAME/files/share" "/opt/apps/$LINGLONG_PKG_NAME/files/opt" 2\>/dev/null | tee -a  $PREFIX/bin/start.sh
+fi
 
 if [ -z $NO_GAMES ]&&[ -d "$PREFIX/games" ];then
     echo '[PATCH GAMES PATH]'
@@ -148,7 +151,7 @@ if [ -e "$JACKS" ] ||  [ -e "$JACKD" ];then
 fi
 
 
-rm -rf $PREFIX/usr $PREFIX/opt
+rm -rf $PREFIX/usr $PREFIX/opt/apps
 echo ln -sf "$PREFIX" "/usx" 2\>/dev/null | tee -a $PREFIX/bin/start.sh
 
 echo "export SHELL=/bin/bash"  | tee -a $PREFIX/bin/start.sh

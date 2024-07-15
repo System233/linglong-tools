@@ -3,11 +3,19 @@ set -e
 ROOT=$(readlink -f $(dirname $0))
 
 PKG_NAME=$1
+
 if [ -z $PKG_NAME ];then
     LINGLONG_PKG_NAME=$(basename $(readlink -f .))
     PKG_NAME=$(echo "$LINGLONG_PKG_NAME"|sed 's/.linyaps$//g')
     mkdir -p packages 2>/dev/null
     cd packages
+elif [ -e "$PKG_NAME" ];then
+  DEB_NAME=$PKG_NAME
+  PKG_NAME=$(dpkg -I "$DEB_NAME" |grep -oP "Package:\s*\K.*")
+  LINGLONG_PKG_NAME="${PKG_NAME}.linyaps"
+  mkdir -p $LINGLONG_PKG_NAME/packages 2>/dev/null
+  cp "$DEB_NAME" "$LINGLONG_PKG_NAME/packages/$PKG_NAME.deb"
+  cd $LINGLONG_PKG_NAME/packages
 else
   PKG_NAME=$(echo "$PKG_NAME"|sed 's/.linyaps$//g')
   LINGLONG_PKG_NAME="${PKG_NAME}.linyaps"
@@ -75,6 +83,11 @@ echo ExecRaw=$F_EXEC_RAW
 echo Exec=$F_EXEC
 echo CWD=$F_DIR
 
+
+LLRT='runtime: org.deepin.Runtime/23.0.1'
+if [ -n "$NO_RT_ENV" ];then
+  LLRT="#$LLRT"
+fi
 cat >linglong.yaml <<EOF
 version: "1"
 
@@ -89,7 +102,7 @@ $F_DESC
 command: [$F_STARTUP]
 
 base: org.deepin.foundation/23.0.0
-runtime: org.deepin.Runtime/23.0.1
+${LLRT}
 
 build: |
   export F_STARTUP="$F_STARTUP"
